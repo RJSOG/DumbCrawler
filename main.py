@@ -2,8 +2,8 @@
 from doctest import TestResults
 from Crawler import Crawler
 
-BASE_URL='http://challenge01.root-me.org/realiste/ch14/?'
-PAYLOAD='p=annonces&a=.//../..//'
+BASE_URL = input("BASE_URL: ")
+PAYLOAD_PATH = input("PAYLOAD_PATH: ")
 
 def listFilesRecursively(parent):
     if parent.child != []:
@@ -18,7 +18,7 @@ def listFilesRecursively(parent):
         print('files : ' + str(parent.files))
         return True
     
-CrawlerObj = Crawler(BASE_URL, PAYLOAD)
+CrawlerObj = Crawler(BASE_URL, PAYLOAD_PATH)
 CrawlerObj.initTree()
 CrawlerObj.fillTree(CrawlerObj.tree.root)
 listFilesRecursively(CrawlerObj.tree.root)
