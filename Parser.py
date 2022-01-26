@@ -1,4 +1,3 @@
-from this import d
 from bs4 import BeautifulSoup
 
 class Parser:

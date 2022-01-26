@@ -11,6 +11,8 @@ class Crawler:
         if(self.login()):
             url = self.base_url+self.RootPath
             self.rootChild = self.listDir(url,True)
+        else:
+            print('Login Failed')
                 
     def get(self, url, headers):
         return requests.get(url, headers=headers)
@@ -28,15 +30,12 @@ class Crawler:
         if(parent_dir != []):
             for folder in parent_dir:
                 url = parent_url + folder
-                allChild = self.listDir(url, False)
-                nodeObj = self.getNodeObj(allChild, url, parent_node)
+                allHref = self.listDir(url, False)
+                nodeObj = self.getNodeObj(allHref, url, parent_node)
                 actual_node = self.tree.createNodeFromObj(nodeObj)
                 parent_node.addChild(actual_node)
-                parent_node = actual_node
-                self.fillTree(parent_node)
-            return True
-        else:
-            return True
+                self.fillTree(actual_node)
+        return True
             
     def getNodeObj(self, childArr, url, parent):
         files, childDir = self.getFilesAndDirFromChilds(childArr)
@@ -58,7 +57,8 @@ class Crawler:
                 if(tailElem != '..'):
                     files.append(tailElem) 
             else:
-                dir.append(tailElem)
+                if(tailElem != '..'):
+                    dir.append(tailElem + '/')
         return files, dir
 
     def listDir(self, url, isRoot):
@@ -69,6 +69,40 @@ class Crawler:
         div = self.parser.getDiv('main')
         childRef = self.parser.getAllHrefFromDiv(div)
         return childRef
+
+    def listFilesRecursively(self, parent):
+        if parent.child != []:
+            print(parent.whoami)
+            print("folder: " + str(parent.dir))
+            print('files : ' + str(parent.files))
+            for node in parent.child:
+                self.listFilesRecursively(node)
+            return True
+        else:
+            print(parent.whoami)
+            print('files : ' + str(parent.files))
+            return True
+
+    def dumpAllFilesRecursively(self, parent, isRoot):
+        if(isRoot):
+            ""
+            # os.mkdir('root/')
+        if(parent.child != []):
+            for index in range(0, len(parent.dir)):
+                dir = parent.dir[index]
+                pathDir = self.getLocalPath(parent, dir)
+                index = parent.dir.index(dir)
+                node = parent.child[index]
+                # os.mkdir(path)
+                for file in parent.files:
+                    pathFile = self.getLocalPath(parent, file)
+                self.dumpAllFilesRecursively(node, False)
+        return True
+
+    def getLocalPath(self, parent, elem):
+        whoami_path = parent.whoami.replace(self.base_url, '')
+        whomai_local_path = whoami_path.replace(self.RootPath, 'root/')
+        return os.path.join(whomai_local_path, elem)
 
     def login(self):
         try:
