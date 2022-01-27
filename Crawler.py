@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import requests
 from Directory import DirectoryTree, Node
 from Parser import Parser
@@ -85,19 +86,28 @@ class Crawler:
 
     def dumpAllFilesRecursively(self, parent, isRoot):
         if(isRoot):
-            ""
-            # os.mkdir('root/')
-        if(parent.child != []):
-            for index in range(0, len(parent.dir)):
-                dir = parent.dir[index]
-                pathDir = self.getLocalPath(parent, dir)
-                index = parent.dir.index(dir)
-                node = parent.child[index]
-                # os.mkdir(path)
-                for file in parent.files:
-                    pathFile = self.getLocalPath(parent, file)
+            os.mkdir('root/')
+            for file in parent.files:
+                    localPath = self.getLocalPath(parent, file)
+                    url = parent.whoami + file
+                    self.dumpFile(localPath, url)
+        if parent.child != []:
+            for node in parent.child:
+                dir = node.whoami.replace(parent.whoami, '')
+                localPath = self.getLocalPath(parent, dir)
+                os.mkdir(localPath)
+                for file in node.files:
+                    localPath = self.getLocalPath(node, file)
+                    url = node.whoami + file
+                    self.dumpFile(localPath, url)
                 self.dumpAllFilesRecursively(node, False)
-        return True
+            return True
+        else:
+            return True
+
+    def dumpFile(self, localPath, url):
+        resp = self.get(url, self.headers)
+        open(localPath, 'wb').write(resp.content)
 
     def getLocalPath(self, parent, elem):
         whoami_path = parent.whoami.replace(self.base_url, '')
